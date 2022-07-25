@@ -1,0 +1,41 @@
+UCCS Turntable Control 
+A second method for reseting the IP configuration of the device is to connect to the device using any TCP/IP capable
+terminal application, and sending commands to it. PuTTY is a terminal emulator available for use. PuTTY is a free
+(MIT licensed) Windows Telnet and SSH client and can be downloaded from https://www.putty.org/.
+Run PuTTY, and point it to Host 192.168.0.100 Port 1206. Then set Connection type to Raw and click Open.
+
+use python ssh connection 
+https://www.devdungeon.com/content/python-ssh-tutorial
+
+from paramiko import SSHClient
+
+# Connect
+client = SSHClient()
+client.load_system_host_keys()
+client.connect('example.com', username='user', password='secret')
+
+# Run a command (execute PHP interpreter)
+stdin, stdout, stderr = client.exec_command('php')
+print(type(stdin))  # <class 'paramiko.channel.ChannelStdinFile'>
+print(type(stdout))  # <class 'paramiko.channel.ChannelFile'>
+print(type(stderr))  # <class 'paramiko.channel.ChannelStderrFile'>
+
+# Optionally, send data via STDIN, and shutdown when done
+stdin.write('<?php echo "Hello!"; sleep(2); ?>')
+stdin.channel.shutdown_write()
+
+# Print output of command. Will wait for command to finish.
+print(f'STDOUT: {stdout.read().decode("utf8")}')
+print(f'STDERR: {stderr.read().decode("utf8")}')
+
+# Get return code from command (0 is default for success)
+print(f'Return code: {stdout.channel.recv_exit_status()}')
+
+# Because they are file objects, they need to be closed
+stdin.close()
+stdout.close()
+stderr.close()
+
+# Close the client itself
+client.close()
+
